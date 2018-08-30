@@ -29,11 +29,11 @@ namespace TwilioRPG.Controllers
             {
                 case "register":
                     return Register(request);
-                case "help":
+                case "helpme":
                     return Help(request);
             }
 
-            messagingResponse.Message("No matching command found. To view available commands, reply with 'Help'");
+            messagingResponse.Message("No matching command found. To view available commands, reply with 'HelpMe'");
 
             return TwiML(messagingResponse);
         }

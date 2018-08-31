@@ -4,14 +4,16 @@ using Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Domain.Migrations
 {
     [DbContext(typeof(RPGContext))]
-    partial class RPGContextModelSnapshot : ModelSnapshot
+    [Migration("20180831020442_logging")]
+    partial class logging
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,19 +27,16 @@ namespace Domain.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Controller")
-                        .HasMaxLength(100);
-
                     b.Property<Guid>("Conversation")
                         .HasMaxLength(200);
 
                     b.Property<DateTime>("DateUtc");
 
-                    b.Property<string>("Destination")
+                    b.Property<string>("Exception");
+
+                    b.Property<string>("From")
                         .IsRequired()
                         .HasMaxLength(20);
-
-                    b.Property<string>("Exception");
 
                     b.Property<string>("LogLevel")
                         .IsRequired()
@@ -46,10 +45,7 @@ namespace Domain.Migrations
                     b.Property<string>("Message")
                         .IsRequired();
 
-                    b.Property<string>("Method")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("Source")
+                    b.Property<string>("To")
                         .IsRequired()
                         .HasMaxLength(20);
 

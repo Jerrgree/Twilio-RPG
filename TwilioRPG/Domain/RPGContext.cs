@@ -9,6 +9,7 @@ namespace Domain
     public class RPGContext : DbContext
     {
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Log> Logs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -36,6 +37,41 @@ namespace Domain
                     .HasDefaultValue(true);
 
                 entity.Property(e => e.CreateDateUtc);
+            });
+
+            modelBuilder.Entity<Log>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.DateUtc)
+                    .IsRequired();
+
+                entity.Property(e => e.LogLevel)
+                    .IsRequired(true)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Source)
+                    .IsRequired(true)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Destination)
+                    .IsRequired(true)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Controller)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Method)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Message)
+                    .IsRequired(true);
+
+                entity.Property(e => e.Exception);
+
+                entity.Property(e => e.Conversation)
+                    .IsRequired(true)
+                    .HasMaxLength(200);
             });
         }
     }

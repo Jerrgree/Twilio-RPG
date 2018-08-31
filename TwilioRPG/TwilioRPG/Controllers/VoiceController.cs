@@ -14,23 +14,24 @@ namespace TwilioRPG.Controllers
     public class VoiceController : TwilioController
     {
         [HttpPost]
-        public TwiMLResult Index()
+        public void Index()
         {
-            var response = new VoiceResponse();
-            response
-                .Say("Please leave a message at the beep.\nPress the pound key when finished.");
-            response.Record(action: new Uri("https://ca22047f.ngrok.io/api/voice/success"),
-                method: HttpMethod.Get, maxLength: 10, finishOnKey: "#");
-            response.Say("I did not receive a recording");
-
-
-            return TwiML(response);
+            Test();
         }
 
-        [HttpGet("success")]
-        public TwiMLResult Success()
+        void Test()
         {
             var response = new VoiceResponse();
+
+            response.Say("This application does not support voice recordings.");
+
+            Console.WriteLine(response.ToString()); ;
+        }
+
+        [HttpPost("success")]
+        public TwiMLResult Success(string RecordingUrl, int RecordingDuration, string Digits)
+        {
+             var response = new VoiceResponse( );
             response.Say("Thank you for recording your response. Have a nice day");
 
             return TwiML(response);

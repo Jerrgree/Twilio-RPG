@@ -10,6 +10,7 @@ using Domain;
 using TwilioRPG.Common;
 using NLog.Fluent;
 using NLog;
+using System.Threading;
 
 namespace TwilioRPG.Controllers
 {
@@ -29,41 +30,30 @@ namespace TwilioRPG.Controllers
         {
             var Conversation = Guid.NewGuid();
 
-            try
-            {
-                logger.Info()
-                        .Message(String.Format("Message recieved.\nBody: {0}", request.Body))
-                        .Property("Source", request.From)
-                        .Property("Destination", request.To)
-                        .Property("Conversation", Conversation)
-                        .Property("Date", DateTime.UtcNow)
-                        .Write();
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+            Logging.WriteLog(String.Format("Message recieved.\nBody: {0}", request.Body), request, Conversation, logger);
 
             var messagingResponse = new MessagingResponse();
 
-            switch (request.Body.ToLower().Trim())
+            try
             {
-                case "register":
-                    return Register(request, Conversation);
-                case "helpme":
-                    return Help(request, Conversation);
+                switch (request.Body.ToLower().Trim())
+                {
+                    case "register":
+                        return Register(request, Conversation);
+                    case "helpme":
+                        return Help(request, Conversation);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.WriteLog("Exception thrown", request, Conversation, logger, "Index", "Text", Common.LogLevel.Error, ex);
+
+                messagingResponse.Message("I'm sorry, but an error has occured.");
+                return TwiML(messagingResponse);
             }
 
-            logger.Info()
-                .Message("No Matching Command found")
-                .Property("Source", request.From)
-                .Property("Destination", request.To)
-                .Property("Conversation", Conversation)
-                .Property("Date", DateTime.UtcNow)
-                .Property("Controller", "Text")
-                .Property("Method", "Index")
-                .Write();
+            Logging.WriteLog("No Matching Command found", request, Conversation, logger);
+
             messagingResponse.Message("No matching command found. To view available commands, reply with 'HelpMe'");
 
             return TwiML(messagingResponse);
@@ -71,77 +61,57 @@ namespace TwilioRPG.Controllers
 
         TwiMLResult Register(SmsRequest request, Guid Conversation)
         {
-            logger.Info()
-                .Message("Method: Register")
-                .Property("Source", request.From)
-                .Property("Destination", request.To)
-                .Property("Conversation", Conversation)
-                .Property("Date", DateTime.UtcNow)
-                .Property("Controller", "Text")
-                .Property("Method", "Register")
-                .Write();
+            Logging.WriteLog("Method: Register", request, Conversation, logger, "Register", "Text");
 
-            var messagingResponse = new MessagingResponse();
+            var response = new MessagingResponse();
 
-            if (Utilities.UserExists(request.From))
+            if (Utilities.UserExists(request.From, context))
             {
-                messagingResponse.Message("This number is already associated with a user.");
+                response.Message("This number is already associated with a user.");
 
-                logger.Info()
-                .Message("Unable to register as User already exists")
-                .Property("Source", request.From)
-                .Property("Destination", request.To)
-                .Property("Conversation", Conversation)
-                .Property("Date", DateTime.UtcNow)
-                .Property("Controller", "Text")
-                .Property("Method", "Register")
-                .Write();
+                Logging.WriteLog("Unable to register as User already exists", request, Conversation, logger, "Register", "Text");
             }
             else
             {
-                context.Add(new Domain.Models.User()
+                try
                 {
-                    Number = request.From,
-                    IsActive = true,
-                    CreateDateUtc = DateTime.UtcNow
-                });
+                    context.Add(new Domain.Models.User()
+                    {
+                        Number = request.From,
+                        IsActive = true,
+                        CreateDateUtc = DateTime.UtcNow
+                    });
 
-                var result = context.SaveChanges();
+                    var result = context.SaveChanges();
 
-                messagingResponse.Message("User succesfully Registered!");
+                    response.Message("You have succesfully registered!");
 
-                logger.Info()
-                .Message("Succesfully registered new User")
-                .Property("Source", request.From)
-                .Property("Destination", request.To)
-                .Property("Conversation", Conversation)
-                .Property("Date", DateTime.UtcNow)
-                .Property("Controller", "Text")
-                .Property("Method", "Register")
-                .Write();
+                    Logging.WriteLog("Succesfully registered new User", request, Conversation, logger, "Register", "Text");
+                }
+                catch (Exception ex)
+                {
+                    Logging.WriteLog("An error occured attempting to add new user", request, Conversation, logger, "Register", "Text", Common.LogLevel.Error, ex);
+
+                    response.Message("I'm sorry, but an error has occured.");
+                }
             }
 
-            return TwiML(messagingResponse);
+            Logging.WriteLog("Ending Conversation", request, Conversation, logger, "Register", "Text");
+
+            return TwiML(response);
         }
 
         TwiMLResult Help(SmsRequest request, Guid Conversation)
         {
-            logger.Info()
-                .Message("Method: Help")
-                .Property("Source", request.From)
-                .Property("Destination", request.To)
-                .Property("Conversation", Conversation)
-                .Property("Date", DateTime.UtcNow)
-                .Property("Controller", "Text")
-                .Property("Method", "Help")
-                .Write();
+            Logging.WriteLog("Method: Help", request, Conversation, logger, "Register", "Help");
 
             var messagingResponse = new MessagingResponse();
 
             messagingResponse.Message("You can currently use these commands:\nRegister\n");
 
+
+            Logging.WriteLog("Ending Conversation", request, Conversation, logger, "Register", "Help");
             return TwiML(messagingResponse);
         }
-
-    }
+    } 
 }

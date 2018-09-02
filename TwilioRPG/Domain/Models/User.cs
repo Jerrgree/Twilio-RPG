@@ -11,5 +11,7 @@ namespace Domain.Models
         public string Number { get; set; }
         public DateTime CreateDateUtc { get; set; }
         public bool IsActive { get; set; }
+        public int CurrentPasswordId { get; set; }
+        public DbSet<Password> Passwords { get; set; }
     }
 }

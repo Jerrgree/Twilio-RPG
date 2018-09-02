@@ -36,7 +36,28 @@ namespace Domain
                     .IsRequired(true)
                     .HasDefaultValue(true);
 
+                entity.HasMany(e => e.Passwords)
+                    .WithOne(e => e.User)
+                    .HasForeignKey(x => x.User_Id)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_User_Passwords");
+
                 entity.Property(e => e.CreateDateUtc);
+            });
+            
+            modelBuilder.Entity<Password>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.PasswordText)
+                    .IsRequired(true);
+
+                entity.Property(e => e.User_Id)
+                    .IsRequired(true);
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired(true)
+                    .HasDefaultValue(true);
             });
 
             modelBuilder.Entity<Log>(entity =>
